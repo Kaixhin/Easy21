@@ -19,12 +19,12 @@ local addCard = function(sum, card)
   end
 end
 
--- Checks if bust (and returns reward from player's perspective)
+-- Checks if bust
 local checkBust = function(sum)
   if sum > 21 or sum < 1 then
-    return -1
+    return true
   else
-    return 0
+    return false
   end
 end
 
@@ -46,7 +46,9 @@ local step = function(s, a)
     sPrime[2] = addCard(playersSum, drawCard())
 
     -- Check player fail conditions
-    r = checkBust(sum)
+    if checkBust(sPrime[2]) then
+      r = -1
+    end
   elseif a == 'stick' then
     local dealersSum = dealersFirstCard
 
@@ -56,18 +58,17 @@ local step = function(s, a)
       dealersSum = addCard(dealersSum, drawCard())
     end
 
-    -- Check dealer fail conditions
-    r = -1 * checkBust(dealersSum)
-
-    -- Check winning conditions otherwise (player with largest sum)
-    if r ~= 1 then
-      if dealersSum > playersSum then
-        r = -1
-      elseif dealersSum < playersSum then
-        r = 1
-      end
+    -- Check dealer fail conditions and winning conditions otherwise (player with largest sum)
+    if checkBust(dealersSum) then
+      r = 1
+    elseif dealersSum > playersSum then
+      r = -1
+    elseif dealersSum < playersSum then
+      r = 1
     end
   end
 
   return sPrime, r
 end
+
+return step
