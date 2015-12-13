@@ -1,3 +1,10 @@
+local environ = {}
+
+-- States are a tuple of dealer's first card (1-10) and the player's sum
+-- Set of actions
+environ.A = {'stick', 'hit'}
+-- State transitions are not explicitly stored
+
 -- Draws a card (with replacement)
 local drawCard = function()
   -- Draw number uniformly from 1-10
@@ -21,15 +28,11 @@ end
 
 -- Checks if bust
 local checkBust = function(sum)
-  if sum > 21 or sum < 1 then
-    return true
-  else
-    return false
-  end
+  return sum > 21 or sum < 1
 end
 
 -- Performs a step in the environment
-local step = function(s, a)
+environ.step = function(s, a)
   -- Current state
   local dealersFirstCard = s[1]
   local playersSum = s[2]
@@ -37,7 +40,7 @@ local step = function(s, a)
   local sPrime = {}
   sPrime[1] = dealersFirstCard
   sPrime[2] = playersSum
-  -- Reward
+  -- Reward (0 by default)
   local r = 0
 
   -- Process actions
@@ -59,16 +62,19 @@ local step = function(s, a)
     end
 
     -- Check dealer fail conditions and winning conditions otherwise (player with largest sum)
-    if checkBust(dealersSum) then
+    if checkBust(dealersSum) or dealersSum < playersSum then
       r = 1
     elseif dealersSum > playersSum then
       r = -1
-    elseif dealersSum < playersSum then
-      r = 1
     end
   end
 
   return sPrime, r
 end
 
-return step
+-- Calculates if the current state is terminal given previous action and reward
+environ.isTerminal = function(a, r)
+  return a == 'stick' or r == -1
+end
+
+return environ
