@@ -2,12 +2,12 @@ local _ = require 'moses'
 local gnuplot = require 'gnuplot'
 local environ = require 'environ'
 
-local nSamples = 100000
+local nEpisodes = 100000
 -- Number of discrete actions
 local m = #environ.A
 
 -- No discounting
-local lambda = 1
+local gamma = 1
 -- Action-value function
 local Q = torch.zeros(10, 21, m)
 -- Number of times a state is visited per action
@@ -15,13 +15,13 @@ local N = torch.zeros(10, 21, m)
 local NZero = 100
 
 -- Sample
-for i = 1, nSamples do
+for i = 1, nEpisodes do
   -- Experience tuples (s, a, r)
   local E = {}
   -- Pick random starting state
   local s = {torch.random(1, 10), torch.random(1, 21)}
   
-  -- Run till termination (hence only works in episodic problems)
+  -- Run till termination
   repeat
     -- Calculate (time-varying) epsilon dependent on state visits
     local epsilon = NZero/(NZero + torch.sum(N[s[1]][s[2]]))
@@ -51,13 +51,13 @@ for i = 1, nSamples do
     s = sPrime
   until environ.isTerminal(a, r)
 
-  -- Learn from experience of one complete episode
+  -- Learn from experience of one complete episode (hence only works in episodic problems)
   for j = 1, #E do
     -- Calculate time-dependent return
     local G = 0
     local Gt = 0
     for t = j, #E do
-      G = G + math.pow(lambda, Gt)*E[t][3]
+      G = G + math.pow(gamma, Gt)*E[t][3]
       Gt = Gt + 1
     end
 
@@ -77,10 +77,13 @@ end
 
 -- Extract V as argmax Q
 local V = torch.max(Q, 3):squeeze()
--- Create plot of V
+-- Plot V
 gnuplot.pngfigure('V.png')
 gnuplot.splot(V)
 gnuplot.title('V*')
 gnuplot.ylabel('Player sum')
 gnuplot.xlabel('Dealer showing')
 gnuplot.plotflush()
+
+-- Save Q
+torch.save('Q.t7', Q)
