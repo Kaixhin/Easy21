@@ -56,7 +56,6 @@ for lambda = 0, 1, 0.1 do
       local sPrime, r = environ.step(s, a)
 
       local aPrimeIndex, delta
-      -- TODO: Deal with states "outside" of S
       if sPrime[2] >= 1 and sPrime[2] <= 21 then
         -- Choose action greedily for sPrime
         __, aPrimeIndex = torch.max(N[sPrime[1]][sPrime[2]], 1)
@@ -65,8 +64,8 @@ for lambda = 0, 1, 0.1 do
         -- Calculate TD-error
         delta = r + lambda*Q[sPrime[1]][sPrime[2]][aPrimeIndex] - Q[s[1]][s[2]][aIndex]
       else
-        -- Set delta as r?
-        delta = r
+        -- In terminal states, Q(s', a') = 0
+        delta = r - Q[s[1]][s[2]][aIndex]
       end
 
       -- Calculate (time-varying) step size
@@ -90,8 +89,8 @@ for lambda = 0, 1, 0.1 do
 
   -- Plot learning curve for lambda = 0, 1 (doubles cannot be compared)
   if tostring(lambda) == '0' or tostring(lambda) == '1' then
-    gnuplot.pngfigure('lambdaLearning' .. lambda .. '.png')
-    gnuplot.plot('Sq. Error', torch.linspace(1, 1000, 1000), torch.Tensor(epLambdaErrors))
+    gnuplot.pngfigure('SarsaLambda' .. lambda .. 'Learning.png')
+    gnuplot.plot('Sq. Error', torch.linspace(1, 1000, 1000), torch.Tensor(epLambdaErrors), '-')
     gnuplot.title('Sarsa(' .. lambda .. ') learning curve')
     gnuplot.ylabel('Squared error versus Q*')
     gnuplot.xlabel('Episode #')
@@ -100,7 +99,7 @@ for lambda = 0, 1, 0.1 do
 end
 
 -- Plot Sarsa(lambda) errors
-gnuplot.pngfigure('lambda.png')
+gnuplot.pngfigure('SarsaLambda.png')
 gnuplot.plot('Sq. Error', torch.linspace(0, 1, 11), torch.Tensor(lambdaErrors))
 gnuplot.title('Sarsa(lambda) errors')
 gnuplot.ylabel('Squared error versus Q*')
