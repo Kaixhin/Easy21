@@ -50,7 +50,7 @@ for lambda = 0, 1, 0.1 do
       
       -- Increment state and eligibility counters
       N[s[1]][s[2]][aIndex] = N[s[1]][s[2]][aIndex] + 1
-      El[s[1]][s[2]][aIndex] = El[s[1]][s[2]][aIndex] + 1
+      El[s[1]][s[2]][aIndex] = gamma*lambda*El[s[1]][s[2]][aIndex] + 1
 
       -- Perform a step
       local sPrime, r = environ.step(s, a)
@@ -62,7 +62,7 @@ for lambda = 0, 1, 0.1 do
         aPrimeIndex = aPrimeIndex[1]
 
         -- Calculate TD-error
-        delta = r + lambda*Q[sPrime[1]][sPrime[2]][aPrimeIndex] - Q[s[1]][s[2]][aIndex]
+        delta = r + gamma*Q[sPrime[1]][sPrime[2]][aPrimeIndex] - Q[s[1]][s[2]][aIndex]
       else
         -- In terminal states, Q(s', a') = 0
         delta = r - Q[s[1]][s[2]][aIndex]
