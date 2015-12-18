@@ -23,7 +23,7 @@ for i = 1, nEpisodes do
   
   -- Run till termination
   repeat
-    -- Calculate (time-varying) epsilon dependent on state visits
+    -- Calculate (time-dependent) epsilon dependent on state visits
     local epsilon = NZero/(NZero + torch.sum(N[s[1]][s[2]]))
 
     -- Choose action by epsilon-greedy exploration
@@ -37,9 +37,6 @@ for i = 1, nEpisodes do
       aIndex = torch.random(1, m)
     end
     local a = environ.A[aIndex]
-    
-    -- Increment state counter (every-visit Monte-Carlo policy evaluation)
-    N[s[1]][s[2]][aIndex] = N[s[1]][s[2]][aIndex] + 1
 
     -- Perform a step
     local sPrime, r = environ.step(s, a)
@@ -50,6 +47,19 @@ for i = 1, nEpisodes do
     -- Set next state as current state
     s = sPrime
   until environ.isTerminal(a, r)
+
+  -- Increment state counter in a batch form
+  -- NB: This makes "time-dependent" variables act consistently over episodes
+  for j = 1, #E do
+    -- Extract experience
+    local s = E[j][1]
+    local a = E[j][2]
+    -- Get action index
+    local aIndex = _.find(environ.A, a)
+
+    -- Increment state counter (every-visit Monte-Carlo policy evaluation)
+    N[s[1]][s[2]][aIndex] = N[s[1]][s[2]][aIndex] + 1
+  end
 
   -- Learn from experience of one complete episode (hence only works in episodic problems)
   for j = 1, #E do
@@ -67,7 +77,7 @@ for i = 1, nEpisodes do
     -- Get action index
     local aIndex = _.find(environ.A, a)
 
-    -- Calculate (time-varying) step size...
+    -- Calculate (time-varying) step size
     local alpha = 1/N[s[1]][s[2]][aIndex]
 
     -- Estimate value by mean return
