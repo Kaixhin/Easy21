@@ -3,7 +3,8 @@ local environ = require 'environ'
 
 -- Load Q* from MC control
 local QStar = torch.load('Q.t7')
-local nEpisodes = 1000
+-- NB: All values of λ diverge as episodes increase; λ = 1 diverges massively
+local nEpisodes = 250
 -- Number of discrete actions
 local m = #environ.A
 
@@ -90,8 +91,8 @@ end
 
 -- No discounting
 local gamma = 1
--- Parameters
-local theta = torch.rand(3*6*m)
+-- Parameters θ
+local theta = torch.Tensor(3*6*m):normal(0, 0.01)
 -- Number of times a state is visited per action
 local N = torch.zeros(3, 6, m)
 local NZero = 100
