@@ -16,30 +16,30 @@ local Q = torch.zeros(10, 21, m)
 local N = torch.zeros(10, 21, m)
 local NZero = 100
 
--- Sarsa(lambda) errors versus Q*
+-- Sarsa(λ) errors versus Q*
 local lambdaErrors = {}
 
--- Compare different values of lambda
+-- Compare different values of λ
 for lambda = 0, 1, 0.1 do
   -- Learning curve
   local epLambdaErrors = {}
 
   -- Sample
   for i = 1, nEpisodes do
-    -- Eligibility traces for backward view Sarsa(lambda)
+    -- Eligibility traces for backward view Sarsa(λ)
     local El = torch.zeros(10, 21, m)
     -- Pick random starting state
     local s = {torch.random(1, 10), torch.random(1, 21)}
     
     -- Run till termination
     repeat
-      -- Calculate (time-varying) epsilon dependent on state visits
+      -- Calculate (time-dependent) ɛ dependent on state visits
       local epsilon = NZero/(NZero + torch.sum(N[s[1]][s[2]]))
 
-      -- Choose action by epsilon-greedy exploration
+      -- Choose action by ɛ-greedy exploration
       local aIndex
       if torch.uniform() < (1 - epsilon) then
-        -- Pick argmax action with probability 1 - epsilon
+        -- Pick argmax action with probability 1 - ɛ
         __, aIndex = torch.max(N[s[1]][s[2]], 1)
         aIndex = aIndex[1]
       else
@@ -53,7 +53,7 @@ for lambda = 0, 1, 0.1 do
 
       local aPrimeIndex, delta
       if sPrime[2] >= 1 and sPrime[2] <= 21 then
-        -- Choose action greedily for sPrime
+        -- Choose action greedily for s'
         __, aPrimeIndex = torch.max(N[sPrime[1]][sPrime[2]], 1)
         aPrimeIndex = aPrimeIndex[1]
 
@@ -68,7 +68,7 @@ for lambda = 0, 1, 0.1 do
       N[s[1]][s[2]][aIndex] = N[s[1]][s[2]][aIndex] + 1
       El[s[1]][s[2]][aIndex] = El[s[1]][s[2]][aIndex] + 1
 
-      -- Calculate (time-varying) step size
+      -- Calculate (time-dependent) step size ɑ
       local alpha = 1/N[s[1]][s[2]][aIndex]
 
       -- Update Q and eligibility traces for all state-action pairs
@@ -79,7 +79,7 @@ for lambda = 0, 1, 0.1 do
       s = sPrime
     until environ.isTerminal(a, r)
 
-    -- Keep learning curve for lambda = 0, 1 (doubles cannot be compared)
+    -- Keep learning curve for λ = 0, 1 (doubles cannot be compared)
     if tostring(lambda) == '0' or tostring(lambda) == '1' then
       table.insert(epLambdaErrors, torch.sum(torch.pow((Q - QStar), 2)))
     end
@@ -89,7 +89,7 @@ for lambda = 0, 1, 0.1 do
   local lambdaError = torch.sum(torch.pow((Q - QStar), 2))
   table.insert(lambdaErrors, lambdaError)
 
-  -- Plot learning curve for lambda = 0, 1 (doubles cannot be compared)
+  -- Plot learning curve for λ = 0, 1 (doubles cannot be compared)
   if tostring(lambda) == '0' or tostring(lambda) == '1' then
     gnuplot.pngfigure('SarsaLambda' .. lambda .. 'Learning.png')
     gnuplot.plot('Sq. Error', torch.linspace(1, 1000, 1000), torch.Tensor(epLambdaErrors), '-')
@@ -100,7 +100,7 @@ for lambda = 0, 1, 0.1 do
   end
 end
 
--- Plot Sarsa(lambda) errors
+-- Plot Sarsa(λ) errors
 gnuplot.pngfigure('SarsaLambda.png')
 gnuplot.plot('Sq. Error', torch.linspace(0, 1, 11), torch.Tensor(lambdaErrors))
 gnuplot.title('Sarsa(λ) errors')

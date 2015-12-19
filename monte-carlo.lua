@@ -23,13 +23,13 @@ for i = 1, nEpisodes do
   
   -- Run till termination
   repeat
-    -- Calculate (time-dependent) epsilon dependent on state visits
+    -- Calculate (time-dependent) ɛ dependent on state visits
     local epsilon = NZero/(NZero + torch.sum(N[s[1]][s[2]]))
 
-    -- Choose action by epsilon-greedy exploration
+    -- Choose action by ɛ-greedy exploration
     local aIndex
     if torch.uniform() < (1 - epsilon) then
-      -- Pick argmax action with probability 1 - epsilon
+      -- Pick argmax action with probability 1 - ɛ
       __, aIndex = torch.max(N[s[1]][s[2]], 1)
       aIndex = aIndex[1]
     else
@@ -77,7 +77,7 @@ for i = 1, nEpisodes do
     -- Get action index
     local aIndex = _.find(environ.A, a)
 
-    -- Calculate (time-varying) step size
+    -- Calculate (time-dependent) step size ɑ
     local alpha = 1/N[s[1]][s[2]][aIndex]
 
     -- Estimate value by mean return
