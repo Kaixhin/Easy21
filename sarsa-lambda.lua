@@ -47,10 +47,6 @@ for lambda = 0, 1, 0.1 do
         aIndex = torch.random(1, m)
       end
       local a = environ.A[aIndex]
-      
-      -- Increment state and eligibility counters
-      N[s[1]][s[2]][aIndex] = N[s[1]][s[2]][aIndex] + 1
-      El[s[1]][s[2]][aIndex] = gamma*lambda*El[s[1]][s[2]][aIndex] + 1
 
       -- Perform a step
       local sPrime, r = environ.step(s, a)
@@ -68,10 +64,16 @@ for lambda = 0, 1, 0.1 do
         delta = r - Q[s[1]][s[2]][aIndex]
       end
 
+      -- Increment state and eligibility counters
+      N[s[1]][s[2]][aIndex] = N[s[1]][s[2]][aIndex] + 1
+      El[s[1]][s[2]][aIndex] = El[s[1]][s[2]][aIndex] + 1
+
       -- Calculate (time-varying) step size
       local alpha = 1/N[s[1]][s[2]][aIndex]
-      -- Update Q
-      Q[s[1]][s[2]][aIndex] = Q[s[1]][s[2]][aIndex] + alpha*delta*El[s[1]][s[2]][aIndex]
+
+      -- Update Q and eligibility traces for all state-action pairs
+      Q = Q + torch.mul(El, alpha*delta)
+      El:mul(gamma):mul(lambda)
 
       -- Set next state as current state
       s = sPrime
@@ -101,7 +103,7 @@ end
 -- Plot Sarsa(lambda) errors
 gnuplot.pngfigure('SarsaLambda.png')
 gnuplot.plot('Sq. Error', torch.linspace(0, 1, 11), torch.Tensor(lambdaErrors))
-gnuplot.title('Sarsa(lambda) errors')
+gnuplot.title('Sarsa(λ) errors')
 gnuplot.ylabel('Squared error versus Q*')
-gnuplot.xlabel('Lambda')
+gnuplot.xlabel('λ')
 gnuplot.plotflush()
