@@ -7,4 +7,4 @@ Requires [Torch7](http://torch.ch/) with the [Moses](https://github.com/Yonaba/M
 
 Run `monte-carlo.lua` first to generate Q* and the plot of V (below), then `sarsa-lambda.lua` and `lin-fun-approx.lua` to generate their plots.
 
-![V](plots/V.png)
+![V](plots/V.jpg)
