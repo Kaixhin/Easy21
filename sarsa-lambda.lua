@@ -92,7 +92,7 @@ for lambda = 0, 1, 0.1 do
   -- Plot learning curve for λ = 0, 1 (doubles cannot be compared)
   if tostring(lambda) == '0' or tostring(lambda) == '1' then
     gnuplot.pngfigure('SarsaLambda' .. lambda .. 'Learning.png')
-    gnuplot.plot('Sq. Error', torch.linspace(1, 1000, 1000), torch.Tensor(epLambdaErrors), '-')
+    gnuplot.plot('Sq. Error', torch.linspace(1, nEpisodes, nEpisodes), torch.Tensor(epLambdaErrors), '-')
     gnuplot.title('Sarsa(' .. lambda .. ') learning curve')
     gnuplot.ylabel('Squared error versus Q*')
     gnuplot.xlabel('Episode #')
