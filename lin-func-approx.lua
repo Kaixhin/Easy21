@@ -3,8 +3,7 @@ local environ = require 'environ'
 
 -- Load Q* from MC control
 local QStar = torch.load('Q.t7')
--- NB: All values of λ diverge as episodes increase; λ = 1 diverges massively
-local nEpisodes = 250
+local nEpisodes = 1000
 -- Number of discrete actions
 local m = #environ.A
 
@@ -166,7 +165,7 @@ for lambda = 0, 1, 0.1 do
       El:mul(gamma):mul(lambda):add(phi:double())
 
       -- Step-size x prediction error x eligbility trace x feature value (gradient of linear function)
-      local dw = torch.cmul(phi:view(-1):double(), torch.mul(El, alpha*delta))
+      local dw = torch.cmul(phi:view(-1):double(), torch.mul(El, -alpha*delta))
       -- Gradient descent
       theta:csub(dw)
 
