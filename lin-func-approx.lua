@@ -165,9 +165,9 @@ for lambda = 0, 1, 0.1 do
       El:mul(gamma):mul(lambda):add(phi:double())
 
       -- Step-size x prediction error x eligbility trace x feature value (gradient of linear function)
-      local dw = torch.cmul(phi:view(-1):double(), torch.mul(El, -alpha*delta))
-      -- Gradient descent
-      theta:csub(dw)
+      local dw = torch.cmul(phi:view(-1):double(), torch.mul(El, alpha*delta))
+      -- Gradient ascent (not descent)
+      theta:add(dw)
 
       -- Set next state as current state
       s = sPrime
