@@ -7,4 +7,6 @@ Requires [Torch7](http://torch.ch/) with the [Moses](https://github.com/Yonaba/M
 
 Run `monte-carlo.lua` first to generate Q* and the plot of V (below), then `sarsa-lambda.lua` and `lin-fun-approx.lua` to generate their plots.
 
+Includes an additional method without value functions - `policy-gradient.lua` - that uses a simple neural network.
+
 ![V](plots/V.jpg)
