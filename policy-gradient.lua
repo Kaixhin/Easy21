@@ -22,7 +22,11 @@ local epsilonDecay = 1/nEpisodes
 -- Minimum ɛ
 local epsilonMin = 0.05
 -- Constant step-size ɑ
-local alpha = 0.0001
+local alpha = 0.001
+-- RMSProp decay
+local decay = 0.9
+-- (Machine) epsilon
+local eps = 1e-20
 
 -- Create policy network π
 local net = nn.Sequential()
@@ -32,6 +36,8 @@ net:add(nn.Linear(16, m))
 net:add(nn.SoftMax())
 -- Get network parameters θ
 local theta, gradTheta = net:getParameters()
+-- Moving average of squared gradient
+local gradThetaSq = torch.Tensor(gradTheta:size()):zero()
 
 -- Results from each episode
 local results = torch.Tensor(nEpisodes)
@@ -50,7 +56,7 @@ for i = 1, nEpisodes do
     if torch.uniform() < (1 - epsilon) then -- Exploit with probability 1 - ɛ
       -- Get categorical action distribution from π = p(s; θ)
       local probs = net:forward(torch.Tensor(s))
-      probs:add(1e-20) -- Add small probability to prevent NaNs
+      probs:add(eps) -- Add small probability to prevent NaNs
       -- Sample action ~ p(s; θ)
       aIndex = torch.multinomial(probs, 1)[1]
     else
@@ -95,7 +101,7 @@ for i = 1, nEpisodes do
     -- Use a policy gradient update (REINFORCE rule): ∇θ Es[f(s)] = ∇θ ∑s p(s)f(s) = Es[f(s) ∇θ logp(s)]
     local input = torch.Tensor(s)
     local output = net:forward(input)
-    output:add(1e-20) -- Add small probability to prevent NaNs
+    output:add(eps) -- Add small probability to prevent NaNs
 
     -- ∇θ logp(s) = 1/p(a) for chosen a, 0 otherwise
     local target = torch.zeros(m)
@@ -105,8 +111,10 @@ for i = 1, nEpisodes do
     net:backward(input, target)
   end
 
-  -- Gradient ascent (not descent)
-  theta:add(alpha * gradTheta)
+  -- Update moving average of squared gradients
+  gradThetaSq = decay * gradThetaSq + (1 - decay) * torch.pow(gradTheta, 2)
+  -- RMSProp update (gradient ascent version)
+  theta:add(torch.cdiv(alpha * gradTheta, torch.sqrt(gradThetaSq) + eps))
 end
 
 -- Take average results over 1000 episodes
