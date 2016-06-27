@@ -1,6 +1,9 @@
 local gnuplot = require 'gnuplot'
 local environ = require 'environ'
 
+-- Set manual seed
+torch.manualSeed(1)
+
 -- Load Q* from MC control
 local QStar = torch.load('Q.t7')
 local nEpisodes = 1000

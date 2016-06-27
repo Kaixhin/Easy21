@@ -2,6 +2,9 @@ local nn = require 'nn'
 local gnuplot = require 'gnuplot'
 local environ = require 'environ'
 
+-- Set manual seed
+torch.manualSeed(1)
+
 local nEpisodes = 1000000
 -- Number of discrete actions
 local m = #environ.A
