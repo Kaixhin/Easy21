@@ -27,6 +27,8 @@ local alpha = 0.001
 local decay = 0.9
 -- (Machine) epsilon
 local eps = 1e-20
+-- Entropy regularisation factor β
+local beta = 0.01
 
 -- Create policy network π
 local net = nn.Sequential()
@@ -105,7 +107,12 @@ for i = 1, nEpisodes do
 
     -- ∇θ logp(s) = 1/p(a) for chosen a, 0 otherwise
     local target = torch.zeros(m)
-    target[m] = A * 1/output[aIndex] -- f(s) ∇θ logp(s)
+    target[aIndex] = A * 1/output[aIndex] -- f(s) ∇θ logp(s)
+
+    -- Calculate gradient of entropy of policy: -∑a logp(s) + 1
+    local gradEntropy = -torch.sum(torch.log(output) + 1)
+    -- Add to target to improve exploration (prevent convergence to suboptimal deterministic policy)
+    target:add(beta * gradEntropy)
     
     -- Accumulate gradients
     net:backward(input, target)
