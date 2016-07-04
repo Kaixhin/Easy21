@@ -109,8 +109,8 @@ for i = 1, nEpisodes do
     local target = torch.zeros(m)
     target[aIndex] = A * 1/output[aIndex] -- f(s) ∇θ logp(s)
 
-    -- Calculate gradient of entropy of policy: -∑a logp(s) + 1
-    local gradEntropy = -torch.sum(torch.log(output) + 1)
+    -- Calculate gradient of entropy of policy: -logp(s) - 1
+    local gradEntropy = -torch.log(output) - 1
     -- Add to target to improve exploration (prevent convergence to suboptimal deterministic policy)
     target:add(beta * gradEntropy)
     
